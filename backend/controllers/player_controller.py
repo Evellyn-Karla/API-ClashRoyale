@@ -1,7 +1,8 @@
 from backend.api.clashroyale import fetch_player_data, fetch_top_players
 from backend.database.mongodb import get_database
 from backend.models.player import Player
-from datetime import datetime
+from backend.database.mongodb import format_to_timestamp
+
 
 def get_player_info(player_tags):
     players_data = []
@@ -40,41 +41,40 @@ def get_player_info(player_tags):
 
 def win_loss_cards(card_name, start_date, end_date):
     db = get_database()
-    matches_collection = db['matches']
-    player_tags = fetch_top_players()
+    battles_collection = db['battles']
     
-    if player_tags is None or not player_tags:
-        return {"message": "Nenhum jogador encontrado."}
+    # Converte start_date e end_date para datetime no formato UTC (ISO 8601)
+    start_time = format_to_timestamp(start_date)
+    end_time = format_to_timestamp(end_date)
     
-    start_time = datetime.fromtimestamp(start_date)
-    end_time = datetime.fromtimestamp(end_date)
+    
+    
     
     query = {
-        "player_tag": {"$in": player_tags},
-        "cards_used": card_name,
+        "cards_used": {"$elemMatch": {"$eq": card_name}},
         "timestamp": {
             "$gte": start_time,
             "$lte": end_time
         }
     }
+
+
+    battles = list(battles_collection.find(query))
+    total_battles = len(battles)
+
+    if total_battles == 0:
+        return '405'
     
-    matches = list(matches_collection.find(query))
+    wins = len([match for match in battles if match['result'] == 'win'])
+    losses = total_battles - wins
     
-    total_matches = len(matches)
-    if total_matches == 0:
-        return {"message": "Nenhuma partida encontrada para os parâmetros fornecidos."}
-    
-    wins = len([match for match in matches if match['result'] == 'win'])
-    losses = total_matches - wins
-    
-    win_percentage = (wins / total_matches) * 100
-    loss_percentage = (losses / total_matches) * 100
+    win_percentage = (wins / total_battles) * 100
+    loss_percentage = (losses / total_battles) * 100
     
     return {
-        "total_matches": total_matches,
+        "total_battles": total_battles,
         "wins": wins,
         "losses": losses,
         "win_percentage": win_percentage,
         "loss_percentage": loss_percentage
-    }
-
+    } 
