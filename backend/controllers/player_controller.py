@@ -39,42 +39,54 @@ def get_player_info(player_tags):
     
     return players_data
 
-def win_loss_cards(card_name, start_date, end_date):
+def win_loss_cards(card_names, start_date, end_date):
     db = get_database()
     battles_collection = db['battles']
-    
-    # Converte start_date e end_date para datetime no formato UTC (ISO 8601)
+
     start_time = format_to_timestamp(start_date)
     end_time = format_to_timestamp(end_date)
     
-    
-    
-    
-    query = {
-        "cards_used": {"$elemMatch": {"$eq": card_name}},
-        "timestamp": {
-            "$gte": start_time,
-            "$lte": end_time
+    pipeline = [
+        {
+            "$match": {
+                "cards_used": {"$all": [{"$elemMatch": {"$eq": card}} for card in card_names]},  # Usa $all para todas as cartas
+                "timestamp": {
+                    "$gte": start_time,
+                    "$lte": end_time
+                }
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total_battles": {"$sum": 1},
+                "wins": {
+                    "$sum": {
+                        "$cond": [{"$eq": ["$result", "win"]}, 1, 0]
+                    }
+                }
+            }
+        },
+        {
+            "$project": {
+                "total_battles": 1,
+                "wins": 1,
+                "losses": {
+                    "$subtract": ["$total_battles", "$wins"]
+                },
+                "win_percentage": {
+                    "$multiply": [{"$divide": ["$wins", "$total_battles"]}, 100]
+                },
+                "loss_percentage": {
+                    "$multiply": [{"$divide": [{"$subtract": ["$total_battles", "$wins"]}, "$total_battles"]}, 100]
+                }
+            }
         }
-    }
+    ]
 
+    # Executar a agregação
+    result = list(battles_collection.aggregate(pipeline))
+    if not result:
+        return {"total_battles": 0, "wins": 0, "losses": 0, "win_percentage": 0, "loss_percentage": 100}  # Retorne um resultado padrão se não houver partidas
 
-    battles = list(battles_collection.find(query))
-    total_battles = len(battles)
-
-    if total_battles == 0:
-        return '405'
-    
-    wins = len([match for match in battles if match['result'] == 'win'])
-    losses = total_battles - wins
-    
-    win_percentage = (wins / total_battles) * 100
-    loss_percentage = (losses / total_battles) * 100
-    
-    return {
-        "total_battles": total_battles,
-        "wins": wins,
-        "losses": losses,
-        "win_percentage": win_percentage,
-        "loss_percentage": loss_percentage
-    } 
+    return result[0]

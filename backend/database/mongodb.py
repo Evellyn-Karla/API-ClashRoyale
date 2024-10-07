@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from backend.config import DB_NAME, DB_PASSWORD, DB_USERNAME
-from backend.api.clashroyale import fetch_player_data, fetch_top_players, fetch_all_battles
+from backend.api.clashroyale import fetch_player_data, fetch_top_players, fetch_all_battles, fetch_cards
 from datetime import datetime
 _client = None
 
@@ -11,6 +11,19 @@ def get_database():
         _client = MongoClient(uri)
     db = _client[DB_NAME]
     return db
+
+def save_cards_data(cards):
+    try:
+        db = get_database()
+        cards_collection = db['cards']
+        
+        sorted_cards = sorted(cards, key=lambda x: x['name'])
+        
+        cards_collection.insert_many(sorted_cards)
+        print(f"{len(sorted_cards)} cartas salvas com sucesso.")
+        
+    except Exception as e:
+        print(f"Erro ao salvar dados da carta: {e}")
 
 
 def save_player_data(player_data):
@@ -23,30 +36,20 @@ def save_player_data(player_data):
 
 
 def save_battles_data(battles):
-    try:
-        db = get_database()
-        battles_collection = db['battles']
+    db = get_database()
+    battles_collection = db['battles']
+    
+    for battle in battles:
+        battle_document = {
+            "player_tag": battle['team'][0]['tag'],
+            "result": "win" if battle['team'][0]['crowns'] > battle['opponent'][0]['crowns'] else "loss",
+            "cards_used": [card['name'] for card in battle['team'][0]['cards']],
+            "timestamp": battle['battleTime'], 
+            "opponent": battle['opponent'][0]['tag'],
+            "battle_mode": battle['type']
+        }
         
-        matches_to_insert = []
-
-        for battle_list in battles:
-            for battle in battle_list:
-                match_document = {
-                    "player_tag": battle['team'][0]['tag'],
-                    "result": "win" if battle['team'][0]['crowns'] > battle['opponent'][0]['crowns'] else "loss",
-                    "cards_used": [card['name'] for card in battle['team'][0]['cards']],
-                    "timestamp": battle['battleTime'],
-                    "opponent": battle['opponent'][0]['tag'],
-                    "battle_mode": battle['type']
-                }
-                matches_to_insert.append(match_document)
-
-        if matches_to_insert:
-            battles_collection.insert_many(matches_to_insert)
-            print(f"{len(matches_to_insert)} batalhas salvas com sucesso.")
-
-    except Exception as e:
-        print(f"Erro ao salvar batalhas: {str(e)}")
+        battles_collection.insert_one(battle_document)
 
 
 
@@ -89,7 +92,10 @@ def clear_collections():
     
     battles_collection = db['battles']
     battles_collection.delete_many({})  
-
+  
+    """ cards_collection = db['cards']
+    cards_collection.delete_many({})  
+ """
     print("Todas as coleções foram limpas.")
 
 def initialize_database():
@@ -100,12 +106,23 @@ def initialize_database():
         print("Erro ao salvar jogadores.")
         return
 
+    
     battles = fetch_all_battles()
     if battles:
         save_battles_data(battles)
         print("Dados de batalhas salvos com sucesso.")
     else:
         print("Nenhuma batalha encontrada para salvar.")
+
+   
+    """ cards = fetch_cards()
+    if cards:
+        save_cards_data(cards)
+        print("Dados salvos com sucesso.")
+    else:
+        print("erro")
+ """
+   
 
 
 

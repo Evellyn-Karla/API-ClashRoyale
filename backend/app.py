@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS 
-from backend.api.clashroyale import fetch_all_battles,fetch_battle_data
-from backend.controllers.player_controller import get_player_info, win_loss_cards
-from backend.database.mongodb import initialize_database
+from backend.api.clashroyale import fetch_all_battles
+from backend.controllers.player_controller import  win_loss_cards
+from backend.controllers.cards_controller import get_decks_percent
+from backend.database.mongodb import initialize_database, get_database
 
 app = Flask(__name__)
 
@@ -15,17 +16,24 @@ with app.app_context():
    initialize_database() 
     
     
+@app.route('/cards')
+def get_card_names():
+    try:
+        db = get_database()
+        cards_collection = db['cards']
+        # Busca todas as cartas e retorna apenas o campo 'name'
+        cards = cards_collection.find({}, {'_id': 0, 'name': 1, })
+        
+        # Extrai os nomes das cartas e os transforma em uma lista
+        card_names = [card['name'] for card in cards]
+        
+        return card_names
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-@app.route('/')
-def home():
-    #battles = fetch_all_battles()
-    battles = fetch_battle_data('#UUQ9G902P')
-    return battles
 
 # Rota para obter informações do jogador
-@app.route('/player/<player_tag>', methods=['GET'])
-def player(player_tag):
-    return get_player_info(player_tag)
 
 
 @app.route('/win-loss-percentage', methods=['POST'])
@@ -33,7 +41,7 @@ def calculate_win_loss_percentage():
     data = request.json
     
 
-    card_name = data.get('card_name', '')
+    card_name = data.get('selected_cards', [])
     start_date = data.get('start_date', 0)  # Assumindo que você enviará o timestamp no frontend
     end_date = data.get('end_date', 0)
     
@@ -42,7 +50,6 @@ def calculate_win_loss_percentage():
     
     
     result = win_loss_cards(card_name, start_date, end_date)
-    print(result)
     return jsonify(result)
 
 
@@ -51,5 +58,21 @@ def test():
     batalha = fetch_all_battles()
     return batalha
 
+@app.route('/decks', methods=['POST'])
+def get_decks():
+    data = request.json
+    
+
+    start_date = data.get('start_date', 0)  # Assumindo que você enviará o timestamp no frontend
+    end_date = data.get('end_date', 0)
+    min_win_percentage = float(data.get('min_win_percentage', 0))
+
+    # Chama a função que executa a consulta no banco de dados
+    decks = get_decks_percent(start_date, end_date, min_win_percentage)
+    return jsonify(decks)
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
+

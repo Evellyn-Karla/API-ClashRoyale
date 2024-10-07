@@ -1,30 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Porcentagem de Vitórias e Derrotas</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
     <script src="scripts/api.js" defer></script>
     <script src="scripts/main.js" defer></script>
-</head>
-<body>
+  </head>
+  <body>
     <div>
-        <h1>Calcular Porcentagem de Vitórias e Derrotas</h1>
-        <label for="card-name">Nome da Carta:</label>
-        <input type="text" id="card-name" placeholder="Insira o nome da carta">
+        <h1>Porcentagem de Vitórias e Derrotas</h1>
+    
+        <label for="card-dropdown">Nome da Carta:</label>
+        <div id="card-container">
+            <select id="card-dropdown">
+            </select>
+        </div>
         
+        <button onclick="addCardSelect()">Adicionar Carta</button>
+    
         <label for="start-date">Data de Início:</label>
-        <input type="date" id="start-date">
-        
+        <input type="date" id="start-date" />
+    
         <label for="end-date">Data de Fim:</label>
-        <input type="date" id="end-date">
-        
+        <input type="date" id="end-date" />
+    
         <button onclick="getWinLossPercentage()">Calcular</button>
+    
+        <div id="results"></div>
+    </div>
+
+    <div id="results">
+        <img src="" alt="">
+      <!-- Aqui serão exibidos os resultados -->
+    </div>
+
+    <h1>Porcentagem de vitorias por deck</h1>
+    <label for="porcent">Porcentagem minima: </label>
+    <input type="number" name="porcent" id="porcent_min">
+    
+    <label for="start-date">Data de Início:</label>
+    <input type="date" id="start-date1" />
+
+    <label for="end-date">Data de Fim:</label>
+    <input type="date" id="end-date1" />
+
+    <button onclick="calculateWinPercentage()">Calcular</button>
+
+    <div id="decks_porcent"></div>
+
+
+    <div>
+        <h1>Porcentagem de deu Zebra </h1>
+    
+        <label for="card-dropdown">Nome da Carta:</label>
+        <div id="card-container">
+            <select id="card-dropdown">
+            </select>
+        </div>
+        
+        <button onclick="addCardSelect()">Adicionar Carta</button>
+    
+        <label for="start-date">Data de Início:</label>
+        <input type="date" id="start-date" />
+    
+        <label for="end-date">Data de Fim:</label>
+        <input type="date" id="end-date" />
+    
+        <button onclick="getWinLossPercentage()">Calcular</button>
+    
+        <div id="results"></div>
     </div>
     
-    <div id="results">
-        <!-- Aqui serão exibidos os resultados -->
-    </div>
-</body>
+  </body>
 </html>
