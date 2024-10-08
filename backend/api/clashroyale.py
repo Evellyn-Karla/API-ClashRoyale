@@ -33,7 +33,7 @@ def fetch_top_players():
     }
     
     params = {
-        'limit':  5
+        'limit':  2
     }
     
     response = requests.get(url, headers=headers, params=params)

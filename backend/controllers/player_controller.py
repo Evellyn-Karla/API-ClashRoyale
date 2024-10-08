@@ -79,9 +79,6 @@ def win_loss_cards(card_names, start_date, end_date):
             "losses": 1,  # Total de derrotas
             "win_percentage": {
                 "$multiply": [{"$divide": ["$wins", "$total_battles"]}, 100]  # Cálculo de porcentagem de vitórias
-            },
-            "loss_percentage": {
-                "$multiply": [{"$divide": ["$losses", "$total_battles"]}, 100]  # Cálculo de porcentagem de derrotas
             }
         }
     }
@@ -90,7 +87,7 @@ def win_loss_cards(card_names, start_date, end_date):
     # Executar a agregação
     result = list(battles_collection.aggregate(pipeline))
     if not result:
-        return {"total_battles": 0, "wins": 0, "losses": 0, "win_percentage": 0, "loss_percentage": 0} 
+        return {"total_battles": 0, "wins": 0, "losses": 0, "win_percentage": 0} 
 
     return result[0]
 
@@ -154,11 +151,11 @@ def combo_percent(card_names, percent, start_date, end_date):
 
     start_time = format_to_timestamp(start_date)
     end_time = format_to_timestamp(end_date)
-    
+
     pipeline = [
         {
             "$match": {
-                "cards_used": {"$all": [{"$elemMatch": {"$eq": card}} for card in card_names]},  # Filtra todas as cartas
+                "cards_used": {"$all": card_names},  # Filtra combos que contenham todas as cartas especificadas
                 "timestamp": {
                     "$gte": start_time,
                     "$lte": end_time
@@ -167,16 +164,16 @@ def combo_percent(card_names, percent, start_date, end_date):
         },
         {
             "$group": {
-                "_id": "$cards_used",  # Agrupa por combinação de cartas
-                "total_battles": {"$sum": 1},  # Conta o número total de batalhas
+                "_id": "$cards_used",  # Agrupa por combos de cartas
+                "total_battles": {"$sum": 1},  # Conta o total de batalhas
                 "wins": {
                     "$sum": {
-                        "$cond": [{"$eq": ["$result", "win"]}, 1, 0]  # Contagem de vitórias
+                        "$cond": [{"$eq": ["$result", "win"]}, 1, 0]  # Conta vitórias
                     }
                 },
                 "losses": {
                     "$sum": {
-                        "$cond": [{"$eq": ["$result", "loss"]}, 1, 0]  # Contagem de derrotas
+                        "$cond": [{"$eq": ["$result", "loss"]}, 1, 0]  # Conta derrotas
                     }
                 }
             }
@@ -192,18 +189,21 @@ def combo_percent(card_names, percent, start_date, end_date):
             }
         },
         {
-            "$match": {  # Filtra os resultados onde a porcentagem de vitórias é maior que "percent"
-                "win_percentage": {"$gte": percent}
+            "$match": {  
+                "win_percentage": {"$gte": percent}  # Filtra combos com porcentagem de vitórias maior ou igual ao valor especificado
             }
         },
         {
-            "$sort": {"win_percentage": -1}  # Ordena os resultados pela maior porcentagem de vitórias
+            "$sort": {"win_percentage": -1}  # Ordena pela maior porcentagem de vitórias
         }
     ]
     
     result = list(battles_collection.aggregate(pipeline))
-    if not result:
-        return []
+    
+    print(result)  # Imprime o resultado para ver os dados
 
-    return result[0]
+    if not result:
+        return "405"
+
+    return result[0]  # Retorna todos os combos que atenderam às condições
 

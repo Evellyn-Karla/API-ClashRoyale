@@ -10,7 +10,7 @@ def get_decks_percent(start_date, end_date, min_win_percentage):
     start_time = format_to_timestamp(start_date)
     end_time = format_to_timestamp(end_date)
     
-    # Pipeline de agregação
+   
     pipeline = [
         {
             "$match": {
@@ -20,7 +20,7 @@ def get_decks_percent(start_date, end_date, min_win_percentage):
                 }
             }
         },
-        # Verificar que o deck tem exatamente 8 cartas
+    
         {
             "$match": {
                 "$expr": {
@@ -30,7 +30,7 @@ def get_decks_percent(start_date, end_date, min_win_percentage):
         },
         {
             "$group": {
-                "_id": "$cards_used",  # Agrupar por cartas usadas (deck)
+                "_id": "$cards_used", 
                 "total_wins": {
                     "$sum": {"$cond": [{"$eq": ["$result", "win"]}, 1, 0]}
                 },
@@ -47,7 +47,7 @@ def get_decks_percent(start_date, end_date, min_win_percentage):
                         100
                     ]
                 },
-                "deck": "$_id"  # Atribuir o deck usado no resultado
+                "deck": "$_id" 
             }
         },
         {

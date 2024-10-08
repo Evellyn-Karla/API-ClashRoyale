@@ -55,9 +55,6 @@ async function getWinLossPercentage() {
                     <p>Porcentagem de Vitórias: ${result.win_percentage.toFixed(
           2
         )}%</p>
-                    <p>Porcentagem de Derrotas: ${result.loss_percentage.toFixed(
-          2
-        )}%</p>
                 `;
       }
     } else {
@@ -215,12 +212,12 @@ function displayResults(data) {
   resultDisplay.innerHTML = '';
 
   if (data.total_victories === 0) {
-      resultDisplay.innerHTML = '<p>Nenhuma vitória encontrada.</p>';
-      return;
+    resultDisplay.innerHTML = '<p>Nenhuma vitória encontrada.</p>';
+    return;
   }
 
   const wins = data['total_victories']
-  
+
 
   resultDisplay.innerHTML = `
       <p>Vitórias da zebra: ${wins}</p>
@@ -231,7 +228,7 @@ function displayResults(data) {
 async function getComboPercent() {
   const selectedCards = Array.from(document.querySelectorAll('#card-container2 select'))
     .map(select => select.value)
-    .filter(card => card); 
+    .filter(card => card);
 
   const startDateInput = document.getElementById("start-date3").value;
   const endDateInput = document.getElementById("end-date3").value;
@@ -250,7 +247,7 @@ async function getComboPercent() {
 
   const dados = {
     selected_cards: selectedCards,
-    percent: percent,
+    percent: parseFloat(percent),
     start_date: timestampStart,
     end_date: timestampEnd,
   };
@@ -272,32 +269,29 @@ async function getComboPercent() {
     if (response.ok) {
       if (result === "404") {
         document.getElementById(
-          "results"
+          "list-decks"
         ).innerHTML = `<p>Nenhum jogador encontrado.</p>`;
       } else if (result === "405") {
         document.getElementById(
-          "results"
+          "list-decks"
         ).innerHTML = `<p>Nenhuma partida encontrada para os parâmetros fornecidos.</p>`;
       } else {
-        document.getElementById("results").innerHTML = `
+        document.getElementById("list-decks").innerHTML = `
                     <p>Total de Partidas: ${result.total_battles}</p>
                     <p>Porcentagem de Vitórias: ${result.win_percentage.toFixed(
-          2
-        )}%</p>
-                    <p>Porcentagem de Derrotas: ${result.loss_percentage.toFixed(
           2
         )}%</p>
                 `;
       }
     } else {
       document.getElementById(
-        "results"
+        "list-decks"
       ).innerHTML = `<p>Error: ${result.error}</p>`;
     }
   } catch (error) {
     console.error("Erro na requisição:", error);
     document.getElementById(
-      "results"
+      "list-decks"
     ).innerHTML = `<p>Erro ao buscar dados</p>`;
   }
 }
