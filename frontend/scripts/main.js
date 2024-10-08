@@ -41,6 +41,22 @@ async function addCardSelect() {
     // Adiciona o novo select ao contêiner
     cardContainer.appendChild(newSelect);
 }
+async function addCardSelectDeck() {
+    const cardContainer = document.getElementById('card-container2');
+    const newSelect = document.createElement('select');
+
+    // Verifique se o cardContainer foi encontrado
+    if (!cardContainer) {
+        console.error("Elemento 'card-container' não encontrado.");
+        return;
+    }
+
+    // Popula o novo select com as cartas
+    await populateCardDropdown(newSelect);
+
+    // Adiciona o novo select ao contêiner
+    cardContainer.appendChild(newSelect);
+}
 
 // Função para definir as datas iniciais como a data de hoje
 function setDefaultDates() {
@@ -49,11 +65,17 @@ function setDefaultDates() {
   document.getElementById("end-date").value = today;
   document.getElementById("start-date1").value = today;
   document.getElementById("end-date1").value = today;
+  document.getElementById("start-date2").value = today;
+  document.getElementById("end-date2").value = today;
+  document.getElementById("start-date3").value = today;
+  document.getElementById("end-date3").value = today;
+  
+
+  
 }
 
 // Executar as funções ao carregar a página
 document.addEventListener("DOMContentLoaded", function () {
-  populateCardDropdown();
   setDefaultDates();
 });
 
@@ -61,6 +83,10 @@ document.addEventListener("DOMContentLoaded", function () {
 window.onload = async function() {
     const dropdown = document.getElementById("card-dropdown");
     await populateCardDropdown(dropdown);
+    const dropdown1 = document.getElementById("card-dropdown1");
+    await populateCardDropdown(dropdown1);
+    const dropdown2 = document.getElementById("card-dropdown2");
+    await populateCardDropdown(dropdown2);
 };
 /* async function displayCards() {
     const cards = await getCards()  // Supondo que você tenha uma função para obter os dados

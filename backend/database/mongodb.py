@@ -43,9 +43,13 @@ def save_battles_data(battles):
         battle_document = {
             "player_tag": battle['team'][0]['tag'],
             "result": "win" if battle['team'][0]['crowns'] > battle['opponent'][0]['crowns'] else "loss",
+            "lost_crowns": battle['opponent'][0]['crowns'],
+            "win_crowns": battle['team'][0]['crowns'],
+            "player_trophies": battle['team'][0].get('startingTrophies', 0),  
+            "opponent_trophies": battle['opponent'][0].get('startingTrophies', 0),
             "cards_used": [card['name'] for card in battle['team'][0]['cards']],
             "timestamp": battle['battleTime'], 
-            "opponent": battle['opponent'][0]['tag'],
+            "opponent_tag": battle['opponent'][0]['tag'],
             "battle_mode": battle['type']
         }
         

@@ -58,6 +58,7 @@ def fetch_battle_data(player_tag):
 
     
     if response.status_code == 200:
+
         dados = response.json()
         battles_player.extend(dados)
     else:
